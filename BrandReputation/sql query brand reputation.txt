@@ -1,0 +1,149 @@
+Great — now that your database is set up (Brdb), table is ready (Br), and you’re using SQL Shell (psql) for queries, here’s a step-by-step deep-dive analysis plan. Each step includes goal, sample query, and what insights to document.
+
+🔍 1. Analyze Trends in Customer Behavior
+🎯 Goal: Understand customer types, purchasing patterns, and income segmentation.
+1.1 Breakdown by Customer Type:
+
+sql
+Copy
+Edit
+SELECT "CustomerType", COUNT(*) AS total_customers
+FROM "Br"
+GROUP BY "CustomerType";
+📌 Insight: Who are your most common customers — New, Returning, or VIP?
+
+1.2 Purchases by Region and Customer Type:
+
+sql 
+SELECT "Region", "CustomerType", COUNT(*) AS purchases
+FROM "Br"
+GROUP BY "Region", "CustomerType"
+ORDER BY "Region";
+📌 Insight: Where do VIPs cluster? Any regions with low engagement?
+
+1.3 High-Value Customers (e.g., Top 10 by Purchase Amount):Insight: Who are your top spenders?
+
+sql
+Copy
+Edit
+SELECT "CustomerID", "CustomerName", SUM("PurchaseAmount") AS total_spent
+FROM "Br"
+GROUP BY "CustomerID", "CustomerName"
+ORDER BY total_spent DESC
+LIMIT 10;
+📌 
+
+💬 2. Sentiment Analysis Distribution
+🎯 Goal: Understand how customers feel about your brand.
+2.1 Overall Sentiment Distribution: Insight: What percentage of posts are Negative, Neutral, Positive?
+
+sql
+
+SELECT "Sentiment", COUNT(*) AS post_count
+FROM "Br"
+GROUP BY "Sentiment";
+📌 Insight: What percentage of posts are Negative, Neutral, Positive?
+
+2.2 Sentiment Over Time (Monthly):Insight: Are there spikes in negative sentiment during certain months?
+
+sql
+SELECT DATE_TRUNC('month', "InteractionDate") AS month, "Sentiment", COUNT(*) AS count
+FROM "Br"
+GROUP BY month, "Sentiment"
+ORDER BY month;
+📌 
+
+📊 3. Sales Trends and Product Analysis
+🎯 Goal: Discover top-performing products and monthly trends.
+3.1 Sales by Product:
+
+sql
+
+SELECT "ProductPurchased", SUM("PurchaseAmount") AS revenue
+FROM "Br"
+GROUP BY "ProductPurchased"
+ORDER BY revenue DESC;
+📌 Insight: Which products drive revenue?
+
+3.2 Monthly Sales Trend:Are there seasonal spikes or slumps?
+
+sql
+
+SELECT DATE_TRUNC('month', "TransactionDate") AS month, SUM("PurchaseAmount") AS total_sales
+FROM "Br"
+GROUP BY month
+ORDER BY month;
+
+
+📱 4. Social Media Engagement Analysis
+🎯 Goal: Understand how users engage with brand on social media.
+4.1 Engagement by Platform:Which platform gives you the best engagement?
+
+sql
+
+SELECT "Platform", 
+       AVG("EngagementLikes") AS avg_likes,
+       AVG("EngagementShares") AS avg_shares,
+       AVG("EngagementComments") AS avg_comments
+FROM "Br"
+GROUP BY "Platform";
+📌 Insight: 
+
+4.2 Influencer Impact:Who are your top influencer customers?
+
+sql
+
+SELECT "CustomerID", "InfluencerScore", "UserFollowers", 
+       AVG("EngagementLikes" + "EngagementShares" + "EngagementComments") AS avg_engagement
+FROM "Br"
+WHERE "InfluencerScore" > 70
+GROUP BY "CustomerID", "InfluencerScore", "UserFollowers"
+ORDER BY avg_engagement DESC
+LIMIT 10;
+📌 Insight: 
+
+⚠️ 5. Competitor Mentions and Complaint Patterns
+🎯 Goal: Monitor brand vs. competitor talk and resolve issues faster.
+5.1 Brand vs. Competitor Mentions:Are people talking more about competitors than your brand?
+
+sql
+
+SELECT 
+  SUM(CASE WHEN "BrandMention" = TRUE THEN 1 ELSE 0 END) AS brand_mentions,
+  SUM(CASE WHEN "CompetitorMention" = TRUE THEN 1 ELSE 0 END) AS competitor_mentions
+FROM "Br";
+📌 Insight: 
+
+5.2 Top Mentioned Competitors:Which competitors are most discussed?
+
+sql
+
+SELECT "Competitor_x", COUNT(*) AS mentions
+FROM "Br"
+WHERE "Competitor_x" IS NOT NULL
+GROUP BY "Competitor_x"
+ORDER BY mentions DESC;
+📌 Insight: 
+
+5.3 Complaint Patterns (Negative Sentiment):Where do most complaints originate?
+
+sql
+
+SELECT "Platform", COUNT(*) AS complaint_count
+FROM "Br"
+WHERE "Sentiment" = 'Negative'
+GROUP BY "Platform"
+ORDER BY complaint_count DESC;
+📌 Insight: 
+
+5.4 Crisis Response Time:How quickly do you respond to crises?
+
+sql
+
+SELECT 
+  "CustomerID", 
+  "CrisisEventTime", 
+  "FirstResponseTime", 
+  AGE("FirstResponseTime", "CrisisEventTime") AS response_time
+FROM "Br"
+WHERE "CrisisEventTime" IS NOT NULL AND "FirstResponseTime" IS NOT NULL;
